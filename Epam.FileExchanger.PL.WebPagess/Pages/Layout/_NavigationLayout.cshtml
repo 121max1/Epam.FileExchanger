@@ -1,0 +1,83 @@
+﻿@using Epam.FileExchanger.BLL.Interfaces
+@using Epam.FileExchanger.Common.Entities
+@using Epam.FileExchanger.Common.Dependencies;
+@using Microsoft.Extensions.DependencyInjection;
+@{
+    Layout = "~/Pages/Layout/_BasicLayout.cshtml";
+    var userService = DependenciesResolver.Kernel.GetService<IUserService>();
+    User user = userService.GetByLogin(User.Identity.Name);
+
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+</head>
+<body>
+    <script>
+        function SearchFriendFunction() {
+            let username = document.getElementById('username').value;
+            location.href = `SearchFriend?username=${username}`
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            $(".dropdown-toggle").dropdown();
+        });
+    </script>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">FileExchanger</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="~/Pages/UserInfo.cshtml?userID=@user.Id.ToString()">My Profile</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        My friends
+                    </a>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            @foreach (var friend in userService.GetFriends(user))
+                            {
+                                <a class="dropdown-item" href="~/Pages/UserInfo.cshtml?userID=@friend.Id.ToString()">@friend.Username</a>
+                            }
+                        </div>
+                    }
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="~/Pages/AllFiles.cshtml">All Files</a>
+                </li>
+                @if (User.IsInRole("admin"))
+                {
+                    <li class="nav-item active">
+                        <a class="nav-link" href="~/Pages/AllUsers.cshtml">All Users</a>
+                    </li>
+                }
+
+            </ul>
+
+            <div class="form-inline">
+                <div class="row">
+                <div class="col-md-4">
+                    <input name="Username" id="username" class="form-control mr-sm-2" type="search" placeholder="Username" aria-label="Search">
+                </div>
+                <div class="col-md-4">
+                    <button onclick="SearchFriendFunction()" class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                </div>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+    @RenderBody()
+</body>
+</html>

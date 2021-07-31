@@ -1,0 +1,49 @@
+﻿@using Epam.FileExchanger.BLL.Interfaces
+@using Epam.FileExchanger.Common.Entities
+@using Epam.FileExchanger.Common.Dependencies;
+@using Microsoft.Extensions.DependencyInjection;
+@{
+    Layout = "~/Pages/Layout/_NavigationLayout.cshtml";
+    var userService = DependenciesResolver.Kernel.GetService<IUserService>();
+    var users = userService.GetALL();
+    int tableCount = 1;
+}
+<script>
+    function DeleteUser(userID) {
+        location.href = `DeleteUser?userID=${userID}`
+    }
+</script>
+@if (User.IsInRole("admin"))
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col">Username</th>
+                <th scope="col">Birthday</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+
+                tableCount++;
+                <tr>
+                    <th scope="row">@tableCount</th>
+                    <td>@user.FullName</td>
+                    <td>@user.Username</td>
+                    <td>@user.Birthday</td>
+                    <td>
+                        <div class="col-md-4">
+                            <button type="button" onclick="DeleteUser('@user.Id')" class="btn btn-danger">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+
+            }
+        </tbody>
+    </table>
+}
+

@@ -1,0 +1,21 @@
+﻿@using Epam.FileExchanger.BLL.Interfaces
+@using Epam.FileExchanger.Common.Entities
+@using Epam.FileExchanger.Common.Dependencies;
+@using Microsoft.Extensions.DependencyInjection;
+@{
+    var fileService = DependenciesResolver.Kernel.GetService<IFileService>();
+    var file = fileService.GetById(long.Parse(Request.QueryString["fileID"]));
+    FileInfo fileInf = new FileInfo(file.Path);
+    if (fileInf.Exists)
+    {
+        fileInf.Delete();
+        fileService.Delete(file);
+        Response.Redirect($"~/Pages/UserInfo?userID={file.Publisher.Id}");
+    }
+    else
+    {
+        Response.Redirect("~/Pages/ErrorPage");
+    }
+
+
+}

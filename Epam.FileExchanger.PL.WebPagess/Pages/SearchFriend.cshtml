@@ -1,0 +1,22 @@
+﻿@using Epam.FileExchanger.BLL.Interfaces
+@using Epam.FileExchanger.Common.Entities
+@using Epam.FileExchanger.Common.Dependencies;
+@using Microsoft.Extensions.DependencyInjection;
+@{
+    Layout = null;
+    var userService = DependenciesResolver.Kernel.GetService<IUserService>();
+
+
+
+    var username = Request.QueryString["username"];
+    if (userService.GetByUsername(username) != null)
+    {
+        Response.Redirect($"~/Pages/UserInfo.cshtml?userID={userService.GetByUsername(username).Id}");
+    }
+    else
+    {
+        Response.Redirect("~/Pages/ErrorPage");
+    }
+
+}
+

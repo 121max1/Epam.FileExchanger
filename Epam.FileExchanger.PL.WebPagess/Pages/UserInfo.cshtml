@@ -1,0 +1,169 @@
+﻿@using Epam.FileExchanger.BLL.Interfaces
+@using Epam.FileExchanger.Common.Entities
+@using Epam.FileExchanger.Common.Dependencies;
+@using Microsoft.Extensions.DependencyInjection;
+@{
+
+    Layout = "~/Pages/Layout/_NavigationLayout.cshtml";
+    var userService = DependenciesResolver.Kernel.GetService<IUserService>();
+    var fileService = DependenciesResolver.Kernel.GetService<IFileService>();
+    var user = userService.GetById(long.Parse(Request.QueryString["userId"]));
+    var loginnedUser = userService.GetByLogin(User.Identity.Name);
+    if (user == null)
+    {
+        Response.Redirect("~/Pages/ErrorPage");
+    }
+    int tableCount = 0;
+    if (IsPost)
+    {
+
+        string path = "C:/Users/Максим/source/repos/Epam.FileExchanger/Epam.FileExchanger.PL.WebPagess/";
+        int a = Request.Files.Count;
+        var file = Request.Files[0] as HttpPostedFileBase;
+        var privacyType = Request["PrivacyType"];
+        var fileEntity = new Epam.FileExchanger.Common.Entities.File(path + $"Files/{User.Identity.Name}~{file.FileName}", userService.GetByLogin(User.Identity.Name), DateTime.Now, privacyType == null ? PrivacyType.Public : PrivacyType.Private);
+
+        using (FileStream fileToSave = new FileStream(path + $"Files/{User.Identity.Name}~{file.FileName}", FileMode.Create))
+        {
+            file.InputStream.CopyTo(fileToSave);
+        }
+
+        fileService.Add(fileEntity);
+        Response.Redirect($"~/Pages/UserInfo?userID={loginnedUser.Id}");
+    }
+
+
+}
+
+@if (User.Identity.IsAuthenticated)
+{
+<div>
+
+    @if (userService.GetFriends(loginnedUser).Where(u => u.Id == user.Id).Count() == 0 && loginnedUser.Id != user.Id)
+    {
+        <script>
+            function AddFriendFunction(baseUser, userToAdd) {
+                location.href = `AddFriend?baseUserId=${baseUser}&userToAddId=${userToAdd}`
+            }
+        </script>
+        <button onclick="AddFriendFunction('@loginnedUser.Id', '@user.Id')" id="addToFriends" type="button" class="btn btn-success">Подписаться</button>
+
+    }
+    <script>
+        function DeleteFile(fileID) {
+            location.href = `DeleteFile?fileID=${fileID}`
+        }
+    </script>
+    Name: @user.FullName
+    <br />
+    Birthday: @user.Birthday.Date
+    <br />
+    Files:
+    @if (User.Identity.Name == user.Login)
+    {
+    <form method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <input name="FileUpload" id="file-demo" type="file" class="file" data-preview-file-type="any">
+        </div>
+        <div class="form-check form-switch">
+            <input name="PrivacyType" class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
+            <label class="form-check-label" for="flexSwitchCheckDefault">Private</label>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-default">Upload</button>
+        </div>
+    </form>
+    }
+    <script>
+        function download(data, name) {
+            var blob = new Blob([data], { type: 'application/octect-stream' });
+            var bloburl = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = bloburl;
+            a.download = name;
+            a.click();
+            URL.revokeObjectURL(blob);
+        }
+    </script>
+    <script>
+        function downloadFile(idFile) {
+            location.href = `DownloadFile?fileID=${idFile}`
+        }
+    </script>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col">Creation</th>
+                <th scope="col">Owner</th>
+                <th scope="col">Privacy Type</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var file in user.Files)
+            {
+                string type = file.PrivacyType == PrivacyType.Private ? "private" : "public";
+                if (file.PrivacyType == PrivacyType.Public)
+                {
+                    <tr>
+                        <th scope="row">@tableCount</th>
+                        <td>@file.Path.Split('/').Last().Split('~').Last()</td>
+                        <td>@file.AddTime</td>
+                        <td>@user.Username</td>
+                        <td>@type</td>
+                        <td>
+                            <div class="row">
+                                @if (user.Login == User.Identity.Name)
+                                {
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn btn-danger" onclick="DeleteFile('@file.Id')">Delete</button>
+                                    </div>
+                                }
+                                <div class="col-md-4">
+                                    <button type="button" onclick="downloadFile('@file.Id')" class="btn btn-success">Download</button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    tableCount++;
+
+                }
+                else
+                {
+                    if (User.Identity.Name == user.Login ||User.IsInRole("admin"))
+                    {
+                        <tr>
+                            <th scope="row">@tableCount</th>
+                            <td>@file.Path.Split('/').Last().Split('~').Last()</td>
+                            <td>@file.AddTime</td>
+                            <td>@user.Username</td>
+                            <td>@type</td>
+                            <td>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn btn-danger" onclick="DeleteFile('@file.Id')">Delete</button>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="button" onclick="downloadFile('@file.Id')" class="btn btn-success">Download</button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        tableCount++;
+                    }
+                }
+            }
+        </tbody>
+    </table>
+
+</div>
+    <script>
+        $('#addFileBtn').click(function () {
+            location.href = '/pages/addfile';
+        })
+    </script>
+
+}

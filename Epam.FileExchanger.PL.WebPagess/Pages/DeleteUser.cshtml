@@ -1,0 +1,22 @@
+﻿
+@using Epam.FileExchanger.BLL.Interfaces
+@using Epam.FileExchanger.Common.Entities
+@using Epam.FileExchanger.Common.Dependencies;
+@using Microsoft.Extensions.DependencyInjection;
+@{
+    Layout = null;
+    var userService = DependenciesResolver.Kernel.GetService<IUserService>();
+    var user = userService.GetById(long.Parse(Request.QueryString["userID"]));
+    if (user != null)
+    {
+        try
+        {
+            userService.Delete(user);
+        }
+                catch
+                {
+
+                }
+    }
+    Response.Redirect("~/Pages/AllUsers");
+}

@@ -1,0 +1,87 @@
+﻿@using Epam.FileExchanger.BLL.Interfaces
+@using Epam.FileExchanger.Common.Entities
+@using Epam.FileExchanger.Common.Dependencies;
+@using Microsoft.Extensions.DependencyInjection;
+@{
+    Layout = "~/Pages/Layout/_NavigationLayout.cshtml";
+    var fileService = DependenciesResolver.Kernel.GetService<IFileService>();
+    var files = fileService.GetAll();
+    int tableCount = 1;
+}
+<script>
+    function downloadFile(idFile) {
+        location.href = `DownloadFile?fileID=${idFile}`
+    }
+</script>
+<script>
+    function DeleteFile(fileID) {
+        location.href = `DeleteFile?fileID=${fileID}`
+    }
+</script>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Creation</th>
+            <th scope="col">Owner</th>
+            <th scope="col">Privacy Type</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var file in files)
+        {
+            string type = file.PrivacyType == PrivacyType.Private ? "private" : "public";
+            if (file.PrivacyType == PrivacyType.Public)
+            {
+                tableCount++;
+                <tr>
+                    <th scope="row">@tableCount</th>
+                    <td>@file.Path.Split('/').Last().Split('~').Last()</td>
+                    <td>@file.AddTime</td>
+                    <td>@file.Publisher.Username</td>
+                    <td>@type</td>
+                    <td>
+                        <div class="col-md-4">
+                            <button type="button" onclick="downloadFile('@file.Id')" class="btn btn-success">Download</button>
+                        </div>
+                        @if (User.IsInRole("admin"))
+                        {
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-danger" onclick="DeleteFile('@file.Id')">Delete</button>
+                            </div>
+                        }
+                    </td>
+                </tr>
+            }
+            else
+            {
+                if (User.IsInRole("admin"))
+                {
+                    tableCount++;
+                    <tr>
+                        <th scope="row">@tableCount</th>
+                        <td>@file.Path.Split('/').Last().Split('~').Last()</td>
+                        <td>@file.AddTime</td>
+                        <td>@file.Publisher.Username</td>
+                        <td>@type</td>
+                        <td>
+                            <div class="col-md-4">
+                                <button type="button" onclick="downloadFile('@file.Id')" class="btn btn-success">Download</button>
+                            </div>
+                            @if (User.IsInRole("admin"))
+                            {
+                                <div class="col-md-4">
+                                    <button type="button" class="btn btn-danger" onclick="DeleteFile('@file.Id')">Delete</button>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        }
+    </tbody>
+</table>
+
+

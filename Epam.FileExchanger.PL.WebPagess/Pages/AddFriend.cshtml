@@ -1,0 +1,14 @@
+﻿@using Epam.FileExchanger.BLL.Interfaces
+@using Epam.FileExchanger.Common.Entities
+@using Epam.FileExchanger.Common.Dependencies;
+@using Microsoft.Extensions.DependencyInjection;
+@{
+    Layout = null;
+    var userService = DependenciesResolver.Kernel.GetService<IUserService>();
+    var baseUser = userService.GetById(long.Parse(Request.QueryString["baseUserId"]));
+    var userToAdd = userService.GetById(long.Parse(Request.QueryString["userToAddId"]));
+    userService.AddToFriends(baseUser, userToAdd);
+    Response.Redirect($"~/Pages/UserInfo?userID={baseUser.Id}");
+
+}
+

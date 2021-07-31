@@ -1,0 +1,17 @@
+﻿@using Epam.FileExchanger.BLL.Interfaces
+@using Epam.FileExchanger.Common.Entities
+@using Epam.FileExchanger.Common.Dependencies;
+@using Microsoft.Extensions.DependencyInjection;
+@{
+    Layout = null;
+    var fileService = DependenciesResolver.Kernel.GetService<IFileService>();
+    var file = fileService.GetById(long.Parse(Request.QueryString["fileID"]));
+    byte[] Content = System.IO.File.ReadAllBytes(file.Path);
+    Response.Clear();
+    Response.AddHeader("Content-Disposition", "attachment; filename=" + file.Path.Split('/').Last().Split('~').Last());
+    Response.ContentType = "application/octet-stream";
+    Response.BufferOutput = true;
+    Response.OutputStream.Write(Content, 0, Content.Length);
+    Response.End();
+    //Response.Redirect($"~/Pages/UserInfo?userID={file.Publisher.Id}");
+}

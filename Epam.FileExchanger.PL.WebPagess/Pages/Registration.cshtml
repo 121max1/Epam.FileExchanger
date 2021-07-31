@@ -1,0 +1,74 @@
+﻿@using Epam.FileExchanger.BLL.Interfaces
+@using Epam.FileExchanger.Common.Entities
+@using Epam.FileExchanger.Common.Dependencies;
+@using Microsoft.Extensions.DependencyInjection;
+@{
+    Layout = null;
+    var userService = DependenciesResolver.Kernel.GetService<IUserService>();
+    if (IsPost)
+    {
+        var name = Request["Name"];
+        var surname = Request["Surname"];
+        var birthday = Request["Birthday"];
+        var login = Request["Login"];
+        var password = Request["Password"];
+        var username = Request["Username"];
+
+        var roles = new List<RoleUser>() { RoleUser.User };
+        var files = new List<Epam.FileExchanger.Common.Entities.File>();
+        userService.Add(new User(login, password, name + " " + surname, username, DateTime.Parse(birthday), roles, files));
+        Response.Redirect("~/pages/signin");
+    }
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link href="~/Content/reg-sign-styles.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="container" >
+        <div class="row">
+
+            <div class="col-md-offset-3 col-md-6">
+                <form class="form-horizontal" method="post">
+                    <span class="heading">Registration</span>
+                    <div class="form-group">
+                        <input name="Name" type="text" class="form-control" id="inputEmail" placeholder="Name" required>
+                        <i class="fa fa-text-width"></i>
+                    </div>
+                    <div class="form-group">
+                        <input name="Surname" type="text" class="form-control" id="inputEmail" placeholder="Surname" required>
+                        <i class="fa fa-text-width"></i>
+                    </div>
+                    <div class="form-group">
+                        <input name="Birthday" placeholder="Birthday" class="form-control" type="text" onfocus="(this.type='date')" id="date" required>
+                        <i class="fa fa-calendar"></i>
+                    </div>
+                    <div class="form-group">
+                        <input name="Username" type="text" class="form-control" id="inputEmail" placeholder="Username" required>
+                        <i class="fa fa-text-width"></i>
+                    </div>
+                    <div class="form-group">
+                        <input name="Login" type="email" class="form-control" id="inputEmail" placeholder="E-mail" required>
+                        <i class="fa fa-user"></i>
+                    </div>
+                    <div class="form-group help">
+                        <input name="Password" type="password" class="form-control" id="inputPassword" placeholder="Password" required>
+                        <i class="fa fa-lock"></i>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-default">Sign up</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
